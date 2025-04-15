@@ -10,7 +10,7 @@ INCLUDE_DIR = include
 # Source, object (generated from source), and final output files
 SRC = $(wildcard $(SRC_DIR)/*.c)
 OBJ = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRC))
-OUT = $(BUILD_DIR)/main
+OUT = $(BUILD_DIR)/main.out
 
 # Build output target
 all: $(OUT)

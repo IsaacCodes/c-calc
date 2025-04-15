@@ -3,17 +3,20 @@
 #include <math.h>
 
 #include "inums.h"
+#include "istrings.h"
+
 #include "parser.h"
 
 int main(void) {
 
-  bool boo = true;
-  i32 num = pow(2, 30);
+  char number_str[20];
+  printf("Enter a number: ");
+  input(number_str, sizeof(number_str), "yo");
 
-  char output[50];
-  snprintf(output, sizeof(output), "%d + %ld = %ld", boo, num, num + (i32) boo);
+  char equation[50];
+  snprintf(equation, sizeof(equation), "%s + %s = %s", number_str, "1", "idk");
 
-  parse(output);
+  parse(equation);
 
   return 0;
 }
