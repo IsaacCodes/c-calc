@@ -3,11 +3,10 @@ for cfile in source/*.c; do
     continue
   fi
 
-  header_name="include/$(basename "$cfile" .c).h"
   {
     echo "#pragma once"
     cproto -Iinclude "$cfile"
-  } > "$header_name"
+  } > "include/$(basename "$cfile" .c).h"
 done
 
 make && echo && ./build/main.out
