@@ -1,6 +1,6 @@
 #pragma once
-/* standalone */
 
+// User Defined
 #include <stdint.h>
 
 //Specifier: %hhd
@@ -47,3 +47,6 @@ typedef double f64;
 //Specifier: %lf or %e
 //Range: 1.2e-38 to 3.4e38
 typedef float f32;
+
+// Auto Generated
+/* standalone */
