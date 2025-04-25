@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "inums.h"
-#include "istrings.h"
+#include "u_nums.h"
+#include "u_strings.h"
 
 #include "parser.h"
 

@@ -1,30 +1,34 @@
 # Compiler and flags
-CC = gcc
-CFLAGS = -Wall -Wextra -Iinclude -std=gnu17
+CC := gcc
+CFLAGS := -Wall -Wextra -std=gnu17
+INCLUDES := -Iutils/include -Iproject/include
 
 # Directories
-SRC_DIR = source
-BUILD_DIR = build
-INCLUDE_DIR = include
+BUILD_DIR := build
+INCLUDE_DIR := include
+UTILS_SOURCE_DIR := utils/source
+PROJECT_SOURCE_DIR := project/source
 
 # Source, object (generated from source), and final output files
-SRC = $(wildcard $(SRC_DIR)/*.c)
-OBJ = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRC))
-OUT = $(BUILD_DIR)/main.out
+SRC := $(wildcard $(UTILS_SOURCE_DIR)/*.c) $(wildcard $(PROJECT_SOURCE_DIR)/*.c)
+OBJ := $(SRC:%.c=$(BUILD_DIR)/%.o)
+OUT := $(BUILD_DIR)/main.out
 
 # Build output target
 all: $(OUT)
 
 # Linking objects
 $(OUT): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^
 
 # Compilation rules
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+$(BUILD_DIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 # Clean target
-.PHONY: clean
-clean:
+clean: 
 	rm -rf $(BUILD_DIR)
+
+# Reserve keywords
+.PHONY: all clean

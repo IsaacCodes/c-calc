@@ -1,5 +1,11 @@
-for cfile in source/*.c; do
-  if [[ "$cfile" == "source/main.c" ]]; then
+# Recursive path names
+shopt -s globstar
+
+# Find all my .c files and convert to .h with cproto
+for cfile in ./**/*.c; do
+  echo "Processing: $cfile"
+
+  if [[ $(basename "$cfile") == "main.c" ]]; then
     continue
   fi
 
