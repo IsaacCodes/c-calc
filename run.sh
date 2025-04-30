@@ -26,4 +26,6 @@ for src_file in ./**/*.c; do
   echo -e "$user_section\n\n$auto_section" > "$header_file"
 done
 
+#Maybe add some kinda -c flag for when only wanting to compile
+
 make && echo && ./build/main.out

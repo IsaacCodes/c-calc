@@ -1,7 +1,7 @@
 #pragma once
 
 // User Defined
-//...
+#include <stdio.h>
 
 // Auto Generated
 /* ./utils/source/u_strings.c */
