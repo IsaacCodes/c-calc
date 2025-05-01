@@ -1,6 +1,6 @@
 # Compiler and flags
 CC := gcc
-CFLAGS := -Wall -Wextra -std=gnu17
+CFLAGS := -g -Wall -Wextra -std=gnu17
 INCLUDES := -Iutils/include -Iproject/include
 
 # Directories

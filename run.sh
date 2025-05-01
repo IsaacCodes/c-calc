@@ -1,3 +1,6 @@
+#!/bin/bash
+set -e
+
 # Recursive path names
 shopt -s globstar
 
@@ -26,6 +29,26 @@ for src_file in ./**/*.c; do
   echo -e "$user_section\n\n$auto_section" > "$header_file"
 done
 
-#Maybe add some kinda -c flag for when only wanting to compile
+echo "Generated prototypes"
 
-make && echo && ./build/main.out
+debug_mode=0
+compile_only=0
+prototype_only=0
+
+while getopts 'dcp' flag; do
+  case $flag in
+  d) debug_mode=1;;
+  c) compile_only=1;;
+  p) prototype_only=1;;
+  esac
+done
+
+if [[ $debug_mode == 1 ]]; then
+  make && gdb ./build/main.out
+elif [[ $compile_only == 1 ]]; then
+  make
+elif [[ $prototype_only == 1 ]]; then
+  :
+else
+  make && echo && ./build/main.out
+fi
