@@ -2,7 +2,11 @@
 #include <stdbool.h>
 #include <string.h>
 
-void input(char* dest, size_t size, char* input_message, char* overflow_message) {
+#include "u_nums.h"
+
+i32 input(char* dest, size_t size, char* input_message) {
+
+  i32 overflow = 0;
 
   if (input_message) printf("%s", input_message);
   fflush(stdout);
@@ -11,15 +15,21 @@ void input(char* dest, size_t size, char* input_message, char* overflow_message)
   
   if (dest[strlen(dest) - 1] != '\n') {
     char chr;
-    while ((chr = getchar()) != '\n' && chr != EOF);
-    if (overflow_message) printf("%s\n", overflow_message);
+    while ((chr = getchar()) != '\n' && chr != EOF) overflow++;
   }
 
   dest[strcspn(dest, "\n")] = '\0';
+  return overflow;
 }
 
 void copy(char* src, char* dest, size_t size) {
   snprintf(dest, size, "%s", src);
+}
+
+void repeat_char(char* dest, size_t size, char c, u32 n) {
+  if (size-1 < n) n = size-1;
+  for (u32 i = 0; i < n; i++) dest[i] = c;
+  dest[n] = '\0';
 }
 
 bool contains_char(char* str, char chr) {

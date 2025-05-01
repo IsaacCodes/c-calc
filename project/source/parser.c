@@ -6,6 +6,8 @@
 #include "u_stack.h"
 #include "u_strings.h"
 
+#include "constants.h"
+
 #define NUMBERS "0123456789"
 #define OPERATORS "^*/+-"
 
@@ -46,12 +48,18 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
       assert( stack_remove(&operator_stack) );
     }
     else if (contains_char(NUMBERS, *chr)) {
-      assert( stack_add(&output_stack, *chr) );
+      while (contains_char(NUMBERS, *chr)) {
+        assert( stack_add(&output_stack, *chr) );
+        chr++;
+      }
+
+      chr--;
+      assert( stack_add(&output_stack, '#') );
     }
     else if (contains_char(OPERATORS, *chr)) {
       char to_move = stack_get(&operator_stack);
 
-      //printf("TM:_%c_ if %d && (%d || %d)\n", to_move, contains_char(OPERATORS, to_move), get_op_priority(to_move) > get_op_priority(*chr), is_left_associative(*chr) && get_op_priority(to_move) == get_op_priority(*chr));
+      //debug: printf("TM:_%c_ if %d && (%d || %d)\n", to_move, contains_char(OPERATORS, to_move), get_op_priority(to_move) > get_op_priority(*chr), is_left_associative(*chr) && get_op_priority(to_move) == get_op_priority(*chr));
       //todo: make this clean. do while maybe?
       while (contains_char(OPERATORS, to_move)
             && ((get_op_priority(to_move) > get_op_priority(*chr)) 
@@ -93,8 +101,7 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
 
 void parse(char* infix_eq) {
 
-  //todo: standardize these sizes somewhere
-  char postfix_eq[100];
+  char postfix_eq[EQUATION_POSTFIX_MAX];
   infix_to_postfix(infix_eq, postfix_eq, sizeof(postfix_eq));
 
   printf("Your equation in postfix is %s\n", postfix_eq);
@@ -102,4 +109,3 @@ void parse(char* infix_eq) {
 }
 
 //todo: test against invalid inputs like "3++4" -- myb missing some asserts?
-//bug: (semi very major issue) no distinctions between 12+3 and 1+23, both become 123+. Need to add support for multi-digit numbers

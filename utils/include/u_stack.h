@@ -2,8 +2,9 @@
 
 // User Defined
 #include "u_nums.h"
+#include "constants.h"
 
-#define STACK_MAX 100
+#define STACK_MAX EQUATION_POSTFIX_MAX
 typedef struct {
   char items[STACK_MAX];
   i32 i;

@@ -1,10 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <math.h>
+#include <string.h>
 
 #include "u_nums.h"
 #include "u_strings.h"
 
+#include "constants.h"
 #include "parser.h"
 
 //todo:
@@ -13,6 +16,8 @@
 //creating other non addition safety operations
 //error checking for > max i64 (? errno)
 //moving this to another file for better organization
+
+//improve header file organization so includes follow whatever tf the best parctices are supposed to be here
 
 i64 add(i64 a, i64 b) {
   if ((b > 0 && a > INT64_MAX - b) || (b < 0 && a < INT64_MIN - b)) {
@@ -38,8 +43,18 @@ int main(void) {
   snprintf(equation, sizeof(equation), "%ld + %ld = %ld", num1, num2, add(num1, num2));
   */
 
-  char equation[100];
-  input(equation, sizeof(equation), "Equation: ", "Input Truncated");
+  char equation[EQUATION_INFIX_MAX];
+  char input_message[] = "Equation: ";
+  char overflow_message[] = "Trimming";
+
+  i32 overflow = input(equation, sizeof(equation), input_message);
+  if (overflow) {
+    i32 space_count = -strlen(overflow_message)+strlen(input_message)+strlen(equation);
+    char arrows[overflow + 1];
+    repeat_char(arrows, sizeof(arrows), '^', overflow);
+    
+    printf("%s%*s%s\n\n", overflow_message, space_count, "", arrows);
+  }
   parse(equation);
 
   return 0;
