@@ -1,10 +1,13 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "u_stack.h"
 
+//Note that i is defined as the next free slot and the last slot is reserved for '\0'
 void stack_init(stack* s) {
   s->i = 0;
+  memset(s->items, '\0', STACK_MAX);
 }
 
 bool stack_is_empty(stack* s) {
@@ -16,13 +19,13 @@ bool stack_is_full(stack* s) {
 }
 
 char stack_get(stack* s) {
-  return s->items[s->i];
+  return s->items[s->i - 1];
 }
 
 bool stack_add(stack* s, char item) {
 
   if (stack_is_full(s)) {
-    printf("Out of space on stack\n");
+    printf("Out of space on stack\n\n");
     return false;
   }
 
@@ -34,11 +37,11 @@ bool stack_add(stack* s, char item) {
 bool stack_remove(stack* s) {
 
   if (stack_is_empty(s)) {
-    printf("Nothing to remove from stack\n");
+    printf("Nothing to remove from stack\n\n");
     return false;
   }
 
-  s->items[s->i] = '\0';
   s->i--;
+  s->items[s->i] = '\0';
   return true;
 }

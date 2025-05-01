@@ -11,8 +11,8 @@
 
 
 i32 get_op_priority(char op) {
-  if (strchr("^", op)) return 2;
-  if (strchr("*/", op)) return 1;
+  if (contains_char("^", op)) return 2;
+  if (contains_char("*/", op)) return 1;
   else return 0;
 }
 
@@ -27,7 +27,7 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
   stack operator_stack;
   stack_init(&operator_stack);
 
-  char* chr = infix_eq;  
+  char* chr = infix_eq;
 
   while (*chr != '\0') {
 
@@ -45,15 +45,16 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
 
       assert( stack_remove(&operator_stack) );
     }
-    else if (strchr(NUMBERS, *chr)) {
+    else if (contains_char(NUMBERS, *chr)) {
       assert( stack_add(&output_stack, *chr) );
     }
-    else if (strchr(OPERATORS, *chr)) {
+    else if (contains_char(OPERATORS, *chr)) {
       char to_move = stack_get(&operator_stack);
 
-      //todo later: make this clean. do while maybe?
-      while (strchr(OPERATORS, to_move) 
-            && ((get_op_priority(to_move) >= get_op_priority(*chr)) 
+      //printf("TM:_%c_ if %d && (%d || %d)\n", to_move, contains_char(OPERATORS, to_move), get_op_priority(to_move) > get_op_priority(*chr), is_left_associative(*chr) && get_op_priority(to_move) == get_op_priority(*chr));
+      //todo: make this clean. do while maybe?
+      while (contains_char(OPERATORS, to_move)
+            && ((get_op_priority(to_move) > get_op_priority(*chr)) 
             || (is_left_associative(*chr) && get_op_priority(to_move) == get_op_priority(*chr)))) {
 
         assert( stack_remove(&operator_stack) );
@@ -61,12 +62,14 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
 
         to_move = stack_get(&operator_stack);
       }
-      assert( stack_add(&output_stack, *chr) );
+      assert( stack_add(&operator_stack, *chr) );
     }
     else if (*chr != ' ') {
-      printf("Invalid character entered\n");
+      printf("Invalid character entered\n\n");
       assert( false );
     }
+
+    //debug: printf("Operator:_%s_L%d\nOutput:_%s_L%d\n\n", operator_stack.items, operator_stack.i, output_stack.items, output_stack.i);
 
     chr++;
   }
@@ -80,6 +83,8 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
 
     assert( stack_remove(&operator_stack) );
     assert( stack_add(&output_stack, to_move) );
+
+    //debug: printf("Operator:_%s_L%d\nOutput:_%s_L%d\n\n", operator_stack.items, operator_stack.i, output_stack.items, output_stack.i);
   }
 
   copy(output_stack.items, postfix_eq, size);
@@ -95,3 +100,6 @@ void parse(char* infix_eq) {
   printf("Your equation in postfix is %s\n", postfix_eq);
 
 }
+
+//todo: test against invalid inputs like "3++4" -- myb missing some asserts?
+//bug: (semi very major issue) no distinctions between 12+3 and 1+23, both become 123+. Need to add support for multi-digit numbers

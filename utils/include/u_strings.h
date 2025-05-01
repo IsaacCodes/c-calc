@@ -7,3 +7,4 @@
 /* ./utils/source/u_strings.c */
 void input(char *dest, size_t size, char *input_message, char *overflow_message);
 void copy(char *src, char *dest, size_t size);
+_Bool contains_char(char *str, char chr);

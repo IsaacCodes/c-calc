@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
 
 void input(char* dest, size_t size, char* input_message, char* overflow_message) {
@@ -19,4 +20,8 @@ void input(char* dest, size_t size, char* input_message, char* overflow_message)
 
 void copy(char* src, char* dest, size_t size) {
   snprintf(dest, size, "%s", src);
+}
+
+bool contains_char(char* str, char chr) {
+  return chr != '\0' && strchr(str, chr) != NULL;
 }
