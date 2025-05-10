@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
@@ -22,90 +23,127 @@ bool is_left_associative(char op) {
   return op != '^';
 }
 
+//Converts an string representing an infix equation to a postfix one
 void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
 
+  //Initialization
   stack output_stack;
-  stack_init(&output_stack);
+  stack_init(&output_stack, sizeof(char));
   stack operator_stack;
-  stack_init(&operator_stack);
+  stack_init(&operator_stack, sizeof(char));
 
   char* chr = infix_eq;
 
+  //Loops through and processes infix_eq
   while (*chr != '\0') {
 
     if (*chr == '(') {
-      assert( stack_add(&operator_stack, '(') );
+      stack_add(&operator_stack, chr);
     }
+
     else if (*chr == ')') {
-      char to_move = stack_get(&operator_stack);
+      char to_move = *(char*)stack_get(&operator_stack);
 
       while (to_move != '(') {
-        assert( stack_remove(&operator_stack) );
-        assert( stack_add(&output_stack, to_move) );
-        to_move = stack_get(&operator_stack);
+        stack_remove(&operator_stack);
+        stack_add(&output_stack, &to_move);
+        to_move = *(char*)stack_get(&operator_stack);
       }
 
-      assert( stack_remove(&operator_stack) );
+      stack_remove(&operator_stack);
     }
+
     else if (contains_char(NUMBERS, *chr)) {
       while (contains_char(NUMBERS, *chr)) {
-        assert( stack_add(&output_stack, *chr) );
+        stack_add(&output_stack, chr);
         chr++;
       }
 
       chr--;
-      assert( stack_add(&output_stack, '#') );
+      stack_add(&output_stack, &(char){'#'});
     }
+
     else if (contains_char(OPERATORS, *chr)) {
-      char to_move = stack_get(&operator_stack);
 
-      //debug: printf("TM:_%c_ if %d && (%d || %d)\n", to_move, contains_char(OPERATORS, to_move), get_op_priority(to_move) > get_op_priority(*chr), is_left_associative(*chr) && get_op_priority(to_move) == get_op_priority(*chr));
-      //todo: make this clean. do while maybe?
-      while (contains_char(OPERATORS, to_move)
-            && ((get_op_priority(to_move) > get_op_priority(*chr)) 
-            || (is_left_associative(*chr) && get_op_priority(to_move) == get_op_priority(*chr)))) {
+      char to_move;
+      while (true) {
+        if (stack_is_empty(&operator_stack)) break;
+        to_move = *(char*)stack_get(&operator_stack);
+        if (!contains_char(OPERATORS, to_move)) break;
 
-        assert( stack_remove(&operator_stack) );
-        assert( stack_add(&output_stack, to_move) );
+        i32 to_move_priority = get_op_priority(to_move);
+        i32 chr_priority = get_op_priority(*chr);
+        if(to_move_priority <= chr_priority && (!is_left_associative(*chr) || to_move_priority != chr_priority)) break;
 
-        to_move = stack_get(&operator_stack);
+        stack_remove(&operator_stack);
+        stack_add(&output_stack, &to_move);
       }
-      assert( stack_add(&operator_stack, *chr) );
+
+      stack_add(&operator_stack, chr);
     }
+
     else if (*chr != ' ') {
       printf("Invalid character entered\n\n");
-      assert( false );
+      exit(1);
     }
-
-    //debug: printf("Operator:_%s_L%d\nOutput:_%s_L%d\n\n", operator_stack.items, operator_stack.i, output_stack.items, output_stack.i);
 
     chr++;
   }
 
+  //Moves over stragglers from operator stack
   char to_move;
   while (true) {
     if (stack_is_empty(&operator_stack)) break;
 
-    to_move = stack_get(&operator_stack);
-    assert( to_move != '(' );
+    to_move = *(char*)stack_get(&operator_stack);
+    if (to_move == '(') {
+      printf("Mismatched parenthesis detected\n");
+      exit(1);
+    }
 
-    assert( stack_remove(&operator_stack) );
-    assert( stack_add(&output_stack, to_move) );
-
-    //debug: printf("Operator:_%s_L%d\nOutput:_%s_L%d\n\n", operator_stack.items, operator_stack.i, output_stack.items, output_stack.i);
+    stack_remove(&operator_stack);
+    stack_add(&output_stack, &to_move);
   }
 
-  copy(output_stack.items, postfix_eq, size);
+  //Copies char stack into postfix string
+  i32 len = (output_stack.i < (i32) size - 1) ? output_stack.i : (i32) size - 1;
+  for (i32 j = 0; j < len; j++) postfix_eq[j] = *(char*)(output_stack.items[j]);
+  postfix_eq[len] = '\0';
 
+  //Clean up
+  stack_free(&operator_stack);
+  stack_free(&output_stack);
 }
 
+//Evaluates a postfix string equation
+i64 eval_postfix(char* postfix_eq) {
+
+  stack value_stack;
+  stack_init(&value_stack, sizeof(i32));
+
+  char* chr = postfix_eq;
+
+  while (*chr != '\0') {
+    if (contains_char(OPERATORS, *chr) || *chr == '#') {
+      //need a version with numbers instead but idk how to do that cleanly atm
+    }
+  }
+
+  stack_free(&value_stack);
+
+  return 1;
+}
+
+//Parses user input and outputs stuff
 void parse(char* infix_eq) {
 
   char postfix_eq[EQUATION_POSTFIX_MAX];
   infix_to_postfix(infix_eq, postfix_eq, sizeof(postfix_eq));
 
-  printf("Your equation in postfix is %s\n", postfix_eq);
+  //eval_postfix(postfix_eq);
 
+  printf("Your equation in postfix is %s\n", postfix_eq);
 }
 
-//todo: test against invalid inputs like "3++4" -- myb missing some asserts?
+//todo: test against invalid inputs like "3++4" -- myb part of eval_postfix?
+//todo: test 322+99-2*(7-4/2)
