@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
+#include <math.h>
 
 #include "u_stack.h"
 #include "u_strings.h"
@@ -42,12 +43,12 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
     }
 
     else if (*chr == ')') {
-      char to_move = *(char*)stack_get(&operator_stack);
+      char to_move = *(char*) stack_get(&operator_stack);
 
       while (to_move != '(') {
         stack_remove(&operator_stack);
         stack_add(&output_stack, &to_move);
-        to_move = *(char*)stack_get(&operator_stack);
+        to_move = *(char*) stack_get(&operator_stack);
       }
 
       stack_remove(&operator_stack);
@@ -68,7 +69,7 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
       char to_move;
       while (true) {
         if (stack_is_empty(&operator_stack)) break;
-        to_move = *(char*)stack_get(&operator_stack);
+        to_move = *(char*) stack_get(&operator_stack);
         if (!contains_char(OPERATORS, to_move)) break;
 
         i32 to_move_priority = get_op_priority(to_move);
@@ -83,7 +84,7 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
     }
 
     else if (*chr != ' ') {
-      printf("Invalid character entered\n\n");
+      printf("Invalid character '%c' entered\n\n", *chr);
       exit(1);
     }
 
@@ -95,7 +96,7 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
   while (true) {
     if (stack_is_empty(&operator_stack)) break;
 
-    to_move = *(char*)stack_get(&operator_stack);
+    to_move = *(char*) stack_get(&operator_stack);
     if (to_move == '(') {
       printf("Mismatched parenthesis detected\n");
       exit(1);
@@ -107,7 +108,7 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
 
   //Copies char stack into postfix string
   i32 len = (output_stack.i < (i32) size - 1) ? output_stack.i : (i32) size - 1;
-  for (i32 j = 0; j < len; j++) postfix_eq[j] = *(char*)(output_stack.items[j]);
+  for (i32 j = 0; j < len; j++) postfix_eq[j] = *(char*) (output_stack.items[j]);
   postfix_eq[len] = '\0';
 
   //Clean up
@@ -119,19 +120,58 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
 i64 eval_postfix(char* postfix_eq) {
 
   stack value_stack;
-  stack_init(&value_stack, sizeof(i32));
+  stack_init(&value_stack, sizeof(i64));
 
   char* chr = postfix_eq;
 
   while (*chr != '\0') {
-    if (contains_char(OPERATORS, *chr) || *chr == '#') {
-      //need a version with numbers instead but idk how to do that cleanly atm
+    if (contains_char(NUMBERS, *chr)) {
+      i64 number = strtol(chr, NULL, 10);
+      stack_add(&value_stack, &number);
+
+      chr = strchr(chr, '#');
     }
+    if (contains_char(OPERATORS, *chr)) {
+      i64 num1 = *(i64*) stack_get(&value_stack);
+      stack_remove(&value_stack);
+      i64 num2 = *(i64*) stack_get(&value_stack);
+      stack_remove(&value_stack);
+      i64 res;
+      
+      switch (*chr) {
+        case '^':
+          res = pow(num2, num1);
+          break;
+        case '*':
+          res = num2 * num1;
+          break;
+        case '/':
+          res = num2 / num1;
+          break;
+        case '+':
+          res = num2 + num1;
+          break;
+        case '-':
+          res = num2 - num1;
+          break;
+      }
+
+      stack_add(&value_stack, &res);
+    }
+
+    chr++;
+  }
+
+  i64 ans = *(i64*) stack_get(&value_stack);
+  stack_remove(&value_stack);
+  if (!stack_is_empty(&value_stack)) {
+    printf("Invalid equation. Multiple items left on value stack\n\n");
+    exit(1);
   }
 
   stack_free(&value_stack);
 
-  return 1;
+  return ans;
 }
 
 //Parses user input and outputs stuff
@@ -140,10 +180,6 @@ void parse(char* infix_eq) {
   char postfix_eq[EQUATION_POSTFIX_MAX];
   infix_to_postfix(infix_eq, postfix_eq, sizeof(postfix_eq));
 
-  //eval_postfix(postfix_eq);
-
-  printf("Your equation in postfix is %s\n", postfix_eq);
+  i64 ans = eval_postfix(postfix_eq);
+  printf("The answer to your equation is %ld\n", ans);
 }
-
-//todo: test against invalid inputs like "3++4" -- myb part of eval_postfix?
-//todo: test 322+99-2*(7-4/2)

@@ -1,6 +1,7 @@
 # Compiler and flags
 CC := gcc
-CFLAGS := -g -Wall -Wextra -std=gnu17
+CFLAGS := -g -Wall -Wextra -std=gnu17 -static
+LINKFLAGS = -lm
 INCLUDES := -Iutils/include -Iproject/include
 
 # Directories
@@ -19,7 +20,7 @@ all: $(OUT)
 
 # Linking objects
 $(OUT): $(OBJ)
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LINKFLAGS)
 
 # Compilation rules
 $(BUILD_DIR)/%.o: %.c
