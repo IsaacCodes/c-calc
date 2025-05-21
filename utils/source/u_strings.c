@@ -1,11 +1,38 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
 
+#include "u_safe.h"
 #include "u_nums.h"
 
+//Gets user input, dynamically allocating space. Requires freeing but also can accomodate (effectively) any size of input
+char* input(char* input_message) {
+
+  if (input_message) printf("%s", input_message);
+  fflush(stdout);
+
+  const i32 chunk_size = 100;
+  i32 chunk_count = 1;
+  char* dest = not_null(malloc(chunk_size));
+
+  fgets(dest, chunk_size, stdin);
+
+  while((dest[strlen(dest) - 1]) != '\n') {
+    char continued_string[100];
+    fgets(continued_string, chunk_size, stdin);
+
+    chunk_count++;
+    dest = not_null(realloc(dest, chunk_count*chunk_size));
+    strcat(dest, continued_string);
+  }
+
+  dest[strcspn(dest, "\n")] = '\0';
+  return dest;
+}
+
 //Safely gets user input, discarding overflow and returning overflow amount
-i32 input(char* dest, size_t size, char* input_message) {
+i32 sized_input(char* dest, size_t size, char* input_message) {
 
   i32 overflow = 0;
 

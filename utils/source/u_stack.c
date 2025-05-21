@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "u_safe.h"
 #include "u_stack.h"
 
 //Initializes the stack struct with 0's
@@ -38,11 +39,7 @@ void stack_add(stack* s, void* item) {
   }
 
   //Allocate memory for item
-  s->items[s->i] = malloc(s->item_size);
-  if (s->items[s->i] == NULL) {
-    printf("Memory allocation failed\n\n");
-    exit(1);
-  }
+  s->items[s->i] = not_null(malloc(s->item_size));
 
   memcpy(s->items[s->i], item, s->item_size);
   s->i++;
