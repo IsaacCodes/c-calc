@@ -1,14 +1,11 @@
+#include "u_strings.h"
+#include "u_stack.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <assert.h>
 #include <math.h>
-
-#include "u_stack.h"
-#include "u_strings.h"
-
-#include "constants.h"
 
 #define NUMBERS "0123456789"
 #define OPERATORS "^*/+-"
@@ -24,7 +21,7 @@ bool is_left_associative(char op) {
   return op != '^';
 }
 
-//Converts an string representing an infix equation to a postfix one
+//Converts a string representing an infix equation to a postfix one
 void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
 
   //Initialization
@@ -43,14 +40,7 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
     }
 
     else if (*chr == ')') {
-      char to_move = *(char*) stack_get(&operator_stack);
-
-      while (to_move != '(') {
-        stack_remove(&operator_stack);
-        stack_add(&output_stack, &to_move);
-        to_move = *(char*) stack_get(&operator_stack);
-      }
-
+      while (*(char*) stack_get(&operator_stack) != '(') stack_move(&operator_stack, &output_stack);
       stack_remove(&operator_stack);
     }
 
@@ -76,8 +66,7 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
         i32 chr_priority = get_op_priority(*chr);
         if(to_move_priority <= chr_priority && (!is_left_associative(*chr) || to_move_priority != chr_priority)) break;
 
-        stack_remove(&operator_stack);
-        stack_add(&output_stack, &to_move);
+        stack_move(&operator_stack, &output_stack);
       }
 
       stack_add(&operator_stack, chr);
@@ -102,13 +91,12 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
       exit(1);
     }
 
-    stack_remove(&operator_stack);
-    stack_add(&output_stack, &to_move);
+    stack_move(&operator_stack, &output_stack);
   }
 
   //Copies char stack into postfix string
   i32 len = (output_stack.i < (i32) size - 1) ? output_stack.i : (i32) size - 1;
-  for (i32 j = 0; j < len; j++) postfix_eq[j] = *(char*) (output_stack.items[j]);
+  for (i32 j = 0; j < len; j++) {postfix_eq[j] = *(char*) (output_stack.items[j]); printf("%c\n", *(char*) output_stack.items[j]);}
   postfix_eq[len] = '\0';
 
   //Clean up
@@ -176,9 +164,10 @@ i64 eval_postfix(char* postfix_eq) {
 
 //Parses user input and outputs stuff
 void parse(char* infix_eq) {
-
-  char postfix_eq[EQUATION_POSTFIX_MAX];
+  char postfix_eq[2*strlen(infix_eq)];
   infix_to_postfix(infix_eq, postfix_eq, sizeof(postfix_eq));
+
+  printf("post: %s\n", postfix_eq);
 
   i64 ans = eval_postfix(postfix_eq);
   printf("The answer to your equation is %ld\n", ans);

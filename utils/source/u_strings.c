@@ -1,30 +1,32 @@
+#include "u_strings.h"
+#include "u_constants.h"
+#include "u_safe.h"
+#include "u_nums.h"
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include "u_safe.h"
-#include "u_nums.h"
-
-//Gets user input, dynamically allocating space. Requires freeing but also can accomodate (effectively) any size of input
+//Gets user input, dynamically allocating space. Requires freeing but also can accommodate (effectively) any size of input
 char* input(char* input_message) {
-
   if (input_message) printf("%s", input_message);
   fflush(stdout);
 
-  const i32 chunk_size = 100;
-  i32 chunk_count = 1;
-  char* dest = not_null(malloc(chunk_size));
+  char* dest = not_null(malloc(CHUNK_SIZE));
+  dest[0] = '\0';
+  char buf[CHUNK_SIZE];
 
-  fgets(dest, chunk_size, stdin);
+  while(true) {
+    if (!fgets(buf, CHUNK_SIZE, stdin)) break;
 
-  while((dest[strlen(dest) - 1]) != '\n') {
-    char continued_string[100];
-    fgets(continued_string, chunk_size, stdin);
+    size_t dest_len = strlen(dest);
+    size_t buf_len = strlen(buf);
 
-    chunk_count++;
-    dest = not_null(realloc(dest, chunk_count*chunk_size));
-    strcat(dest, continued_string);
+    dest = not_null(realloc(dest, dest_len + buf_len + 1));
+    copy(buf, dest + dest_len, buf_len + 1);
+
+    if (buf[buf_len - 1] == '\n') break;
   }
 
   dest[strcspn(dest, "\n")] = '\0';
@@ -33,14 +35,12 @@ char* input(char* input_message) {
 
 //Safely gets user input, discarding overflow and returning overflow amount
 i32 sized_input(char* dest, size_t size, char* input_message) {
-
-  i32 overflow = 0;
-
   if (input_message) printf("%s", input_message);
   fflush(stdout);
 
   fgets(dest, size, stdin);
   
+  i32 overflow = 0;
   if (dest[strlen(dest) - 1] != '\n') {
     char chr;
     while ((chr = getchar()) != '\n' && chr != EOF) overflow++;
@@ -52,22 +52,9 @@ i32 sized_input(char* dest, size_t size, char* input_message) {
 
 //Safely copies a whole string
 void copy(char* src, char* dest, size_t size) {
-  strncpy(dest, src, size - 1);
-  dest[size - 1] = '\0';
-}
-
-//Gets a substring from index i1 (inclusive) to i2 (exclusive)
-void substring(char* src, char* dest, size_t size, size_t i1, size_t i2) {
-  size_t sub_len = (i2 - i1 - 1 < size - 1) ? i2 - i1 - 1 : size - 1;
-  strncpy(dest, src + i1, sub_len);
-  dest[sub_len] = '\0';
-}
-
-//Repeats a character n times
-void repeat_char(char* dest, size_t size, char c, u32 n) {
-  if (size-1 < n) n = size-1;
-  for (u32 i = 0; i < n; i++) dest[i] = c;
-  dest[n] = '\0';
+  size_t i;
+  for (i = 0; i < size - 1 && src[i] != '\0'; i++) dest[i] = src[i];
+  dest[i] = '\0';
 }
 
 //Returns whether a non-null chr is in a str
