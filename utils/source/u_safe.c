@@ -6,7 +6,7 @@
 void* not_null(void* memory) {
   if (memory == NULL) {
     printf("Memory allocation failed\n\n");
-    exit(1);
+    abort();
   }
 
   return memory;

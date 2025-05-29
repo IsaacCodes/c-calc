@@ -12,17 +12,13 @@ void stack_init(stack* s, size_t item_size) {
   s->i = 0;
   s->item_size = item_size;
   s->chunk_count = 1;
-  s->items = not_null(malloc(s->chunk_count * CHUNK_SIZE));
+  s->items = not_null(malloc(s->chunk_count * CHUNK_SIZE * sizeof(void*)));
 }
 
 //Expands the stack, reallocing more memory
 void stack_expand(stack* s) {
-  printf("expanding...\n");
-  printf("%d\n", s->chunk_count * CHUNK_SIZE);
   s->chunk_count++;
-  printf("%d\n", s->chunk_count * CHUNK_SIZE);
-  s->items = not_null(realloc(s->items, s->chunk_count * CHUNK_SIZE));
-  printf("done\n");
+  s->items = not_null(realloc(s->items, s->chunk_count * CHUNK_SIZE * sizeof(void*)));
 }
 
 //Cleans up stack
@@ -63,7 +59,7 @@ void stack_add(stack* s, void* item) {
 void stack_remove(stack* s) {
   if (stack_is_empty(s)) {
     printf("Nothing to remove from stack\n\n");
-    exit(1);
+    abort();
   }
 
   s->i--;
@@ -75,7 +71,7 @@ void stack_remove(stack* s) {
 void* stack_get(stack* s) {
   if (stack_is_empty(s)) {
     printf("Nothing to get from stack\n\n");
-    exit(1);
+    abort();
   }
   return s->items[s->i - 1];
 }

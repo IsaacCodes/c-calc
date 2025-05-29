@@ -21,6 +21,18 @@ bool is_left_associative(char op) {
   return op != '^';
 }
 
+
+//TODO: negative implementation where negative is tokenized with number
+/*
+If a - appears:
+
+    At the start of the expression, or
+
+    Immediately after an opening parenthesis ( or another operator (+, -, *, /, ^, etc.)
+Then treat it as part of a negative number.
+*/
+
+
 //Converts a string representing an infix equation to a postfix one
 void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
 
@@ -74,7 +86,7 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
 
     else if (*chr != ' ') {
       printf("Invalid character '%c' entered\n\n", *chr);
-      exit(1);
+      abort();
     }
 
     chr++;
@@ -88,7 +100,7 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
     to_move = *(char*) stack_get(&operator_stack);
     if (to_move == '(') {
       printf("Mismatched parenthesis detected\n");
-      exit(1);
+      abort();
     }
 
     stack_move(&operator_stack, &output_stack);
@@ -96,7 +108,7 @@ void infix_to_postfix(char* infix_eq, char* postfix_eq, size_t size) {
 
   //Copies char stack into postfix string
   i32 len = (output_stack.i < (i32) size - 1) ? output_stack.i : (i32) size - 1;
-  for (i32 j = 0; j < len; j++) {postfix_eq[j] = *(char*) (output_stack.items[j]); printf("%c\n", *(char*) output_stack.items[j]);}
+  for (i32 j = 0; j < len; j++) postfix_eq[j] = *(char*) (output_stack.items[j]);
   postfix_eq[len] = '\0';
 
   //Clean up
@@ -124,8 +136,8 @@ i64 eval_postfix(char* postfix_eq) {
       stack_remove(&value_stack);
       i64 num2 = *(i64*) stack_get(&value_stack);
       stack_remove(&value_stack);
+
       i64 res;
-      
       switch (*chr) {
         case '^':
           res = pow(num2, num1);
@@ -154,7 +166,7 @@ i64 eval_postfix(char* postfix_eq) {
   stack_remove(&value_stack);
   if (!stack_is_empty(&value_stack)) {
     printf("Invalid equation. Multiple items left on value stack\n\n");
-    exit(1);
+    abort();
   }
 
   stack_free(&value_stack);
@@ -167,8 +179,9 @@ void parse(char* infix_eq) {
   char postfix_eq[2*strlen(infix_eq)];
   infix_to_postfix(infix_eq, postfix_eq, sizeof(postfix_eq));
 
-  printf("post: %s\n", postfix_eq);
+  printf("postfix: %s\n", postfix_eq);
 
   i64 ans = eval_postfix(postfix_eq);
+
   printf("The answer to your equation is %ld\n", ans);
 }
